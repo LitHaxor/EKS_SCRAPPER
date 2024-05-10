@@ -57,7 +57,7 @@ spec:
         - name: application
           image: IMAGE_PLACEHOLDER
           command: ["/bin/bash"]
-          args: ["-c", "celery -A imdb_scraper worker --loglevel=info"]
+          args: ["-c", "celery -A scraper worker --loglevel=info"]
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
