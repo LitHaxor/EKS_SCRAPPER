@@ -1,0 +1,32 @@
+version: '3.5'
+
+services:
+  imdb-scraper:
+    build: .
+    command: scrapy crawl imdb
+    volumes:
+      - ./data:/data
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://pg:postgres@postgres:5432/movies
+      - REDIS_URL=redis://redis:6379/0
+  
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:alpine
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=pg
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=movies
+
+  
