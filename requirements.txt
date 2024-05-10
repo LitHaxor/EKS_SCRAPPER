@@ -1,5 +1,4 @@
 scrapy
-
 sqlalchemy
 celery
 python-dotenv

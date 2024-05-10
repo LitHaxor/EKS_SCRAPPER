@@ -16,12 +16,23 @@ spec:
       - name: postgres
         image: postgres
         env:
-          - name: POSTGRES_DB
-            value: movies
-          - name: POSTGRES_USER
-            value: test
-          - name: POSTGRES_PASSWORD
-            value: test
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: dev-secret
+              key: db
+        - name: POSTGRES_USER
+          valueFrom:
+           secretKeyRef:
+              name: dev-secret
+              key: user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dev-secret
+              key: password
+              
+
         ports:
         - containerPort: 5432
         volumeMounts:
