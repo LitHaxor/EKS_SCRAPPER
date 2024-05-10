@@ -1,6 +1,7 @@
 import pulumi
 import pulumi_awsx as awsx
 import pulumi_eks as eks
+import pulumi_kubernetes as k8s
 
 # Get some values from the Pulumi configuration (or use defaults)
 config = pulumi.Config()
@@ -33,8 +34,7 @@ eks_cluster = eks.Cluster("eks-cluster",
     # Change these values for a private cluster (VPN access required)
     endpoint_private_access=False,
     endpoint_public_access=True
-    )
+)
 
-# Export values to use elsewhere
 pulumi.export("kubeconfig", eks_cluster.kubeconfig)
 pulumi.export("vpcId", eks_vpc.vpc_id)
