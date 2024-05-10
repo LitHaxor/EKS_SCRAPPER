@@ -44,8 +44,8 @@ jobs:
 
       - name: Apply Kubernetes manifests
         env:
-          AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
-          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ steps.login-ecr.outputs.account_id }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           GITHUB_SHA: ${{ github.sha }}
         run: |
           sed -i "s|IMAGE_PLACEHOLDER|$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/scraper:dev-$GITHUB_SHA|g" deployment/k8s/dev/deployment.yaml
