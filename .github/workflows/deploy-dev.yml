@@ -43,6 +43,10 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Apply Kubernetes manifests
+        env:
+          AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           kubectl apply -f deployment/k8s/dev/deployment.yaml
           kubectl set image -f deployment/k8s/dev/deployment.yaml application=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/scraper:dev-$GITHUB_SHA
