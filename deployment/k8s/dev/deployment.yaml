@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scraper-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scraper-deployment
+  template:
+    metadata:
+      labels:
+        app: scraper-deployment
+    spec:
+      containers:
+        - name: application
+          image: IMAGE_PLACEHOLDER
+          command: ["/bin/bash"]
+          args: ["-c", "scrapy crawl imdb"]
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "300m"
+            requests:
+              cpu: "50m"
+          
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scraper-worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scraper-worker-deployment
+  template:
+    metadata:
+      labels:
+        app: scraper-worker-deployment
+    spec:
+      containers:
+        - name: application
+          image: IMAGE_PLACEHOLDER
+          command: ["/bin/bash"]
+          args: ["-c", "celery -A imdb_scraper worker --loglevel=info"]
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "300m"
+            requests:
+              cpu: "50m"
+          envFrom:
+            - secretRef:
+                name: dev-scraper-deployment-secrets

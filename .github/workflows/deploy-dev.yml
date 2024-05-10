@@ -1,0 +1,50 @@
+name: Dev Deployment
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  dev-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install awscli --upgrade --user
+
+      - name: Configure AWS credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.DEV_EKS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.DEV_EKS_SECRET_ACCESS_KEY }}
+          aws configure set default.region ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/scraper:dev-${GITHUB_SHA} .
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/scraper:dev-${GITHUB_SHA}
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f deployment/k8s/dev/external-secrets.yaml
+          kubectl apply -f deployment/k8s/dev/deployment.yaml
+          kubectl set image -f deployment/k8s/dev/deployment.yaml application=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/scraper:dev-${GITHUB_SHA}
+          kubectl apply -f deployment/k8s/service.yaml
+          kubectl apply -f deployment/k8s/app-hpa.yaml
+          kubectl apply -f deployment/k8s/worker-hpa.yaml
+          kubectl annotate es dev-scraper-deployment-secrets force-sync=$(date +%s) --overwrite
+          kubectl patch hpa scraper-hpa -p '{"spec":{"minReplicas":1,"maxReplicas":1}}'
+          kubectl patch hpa scraper-worker-hpa -p '{"spec":{"minReplicas":1,"maxReplicas":1}}'
