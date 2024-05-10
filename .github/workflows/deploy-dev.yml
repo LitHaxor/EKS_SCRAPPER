@@ -45,7 +45,7 @@ jobs:
       - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f deployment/k8s/dev/deployment.yaml
-          kubectl set image -f deployment/k8s/dev/deployment.yaml application=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/scraper:dev-${GITHUB_SHA}
+          kubectl set image -f deployment/k8s/dev/deployment.yaml application=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/scraper:dev-$GITHUB_SHA
           kubectl apply -f deployment/k8s/service.yaml
           kubectl apply -f deployment/k8s/app-hpa.yaml
           kubectl apply -f deployment/k8s/worker-hpa.yaml
