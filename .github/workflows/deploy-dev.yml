@@ -19,10 +19,11 @@ jobs:
           pip3 install awscli --upgrade --user
 
       - name: Configure AWS credentials
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.DEV_EKS_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.DEV_EKS_SECRET_ACCESS_KEY }}
-          aws configure set default.region ${{ secrets.AWS_REGION }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Update kubeconfig
         run: |
@@ -45,6 +46,5 @@ jobs:
           kubectl apply -f deployment/k8s/service.yaml
           kubectl apply -f deployment/k8s/app-hpa.yaml
           kubectl apply -f deployment/k8s/worker-hpa.yaml
-          kubectl annotate es dev-scraper-deployment-secrets force-sync=$(date +%s) --overwrite
           kubectl patch hpa scraper-hpa -p '{"spec":{"minReplicas":1,"maxReplicas":1}}'
           kubectl patch hpa scraper-worker-hpa -p '{"spec":{"minReplicas":1,"maxReplicas":1}}'
