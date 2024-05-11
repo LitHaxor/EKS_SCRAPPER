@@ -33,7 +33,6 @@ eks_cluster = eks.Cluster("eks-cluster",
     node_associate_public_ip_address=False,
     # Change these values for a private cluster (VPN access required)
     endpoint_private_access=False,
-    endpoint_public_access=True
 )
 
 pulumi.export("kubeconfig", eks_cluster.kubeconfig)
